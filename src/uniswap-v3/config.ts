@@ -37,6 +37,8 @@ export interface ExampleConfig {
     token1: Token,
     token0Amount: number,
     token1Amount: number,
+    fractionToRemove: number
+    fractionToAdd: number
   }
 }
 
@@ -70,5 +72,7 @@ export const CurrentConfig: ExampleConfig = {
     token1: USDC_TOKEN,
     token1Amount: 4000,
 
+    fractionToRemove: 10, // 10% of liquidity to remove
+    fractionToAdd: 5, // 5% of liquidity to add
   },
 }

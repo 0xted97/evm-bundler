@@ -1,6 +1,8 @@
 import { Token, TradeType } from '@uniswap/sdk-core'
 import { Trade } from '@uniswap/v3-sdk'
 import { BigNumber, ethers } from 'ethers'
+import JSBI from 'jsbi'
+
 
 const MAX_DECIMALS = 4
 

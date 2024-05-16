@@ -1,10 +1,13 @@
-import { rawMintPosition } from "../libs/positions";
+import { rawAddLiquidity, rawRemoveLiquidity } from "../libs/liquidity";
 import {  } from "../libs/router";
 
 async function main() {
    
-    const rawMint = await rawMintPosition();
-    console.log("🚀 ~ main ~ rawMint:", rawMint)
+    const rawAdd = await rawAddLiquidity(9898989);
+    console.log("🚀 ~ main ~ rawAdd:", rawAdd)
+
+    const rawRemove = await rawRemoveLiquidity(9898989);
+    console.log("🚀 ~ main ~ rawRemove:", rawRemove)
 }
 
 

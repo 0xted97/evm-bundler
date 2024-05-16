@@ -36,6 +36,7 @@ export async function rawAddLiquidity(positionId: number): Promise<any> {
       ).toString()
     ),
   )
+  
 
 
   // get calldata for minting a position
@@ -106,6 +107,42 @@ export async function rawRemoveLiquidity(positionId: number): Promise<any> {
     currentPosition,
     removeLiquidityOptions
   );
+
+  const tx = {
+    data: calldata,
+    to: NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS,
+    value: value,
+    from: address,
+    maxFeePerGas: MAX_FEE_PER_GAS,
+    maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
+  }
+  return tx;
+}
+
+
+
+export async function rawCollectFeePosition(positionId: number): Promise<any> {
+  const address = getWalletAddress()
+  const provider = getProvider()
+  if (!address || !provider) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+
+  const collectOptions: CollectOptions = {
+    tokenId: positionId,
+    expectedCurrencyOwed0: CurrencyAmount.fromRawAmount(
+      CurrentConfig.tokens.token0,
+      0
+    ),
+    expectedCurrencyOwed1: CurrencyAmount.fromRawAmount(
+      CurrentConfig.tokens.token1,
+      0
+    ),
+    recipient: address,
+  }
+
+  // get calldata for minting a position
+  const { calldata, value } = NonfungiblePositionManager.collectCallParameters(collectOptions);
 
   const tx = {
     data: calldata,

@@ -32,6 +32,11 @@ export interface ExampleConfig {
     amountIn: number
     out: Token
     poolFee: number
+    
+    token0: Token,
+    token1: Token,
+    token0Amount: number,
+    token1Amount: number,
   }
 }
 
@@ -44,18 +49,26 @@ export const CurrentConfig: ExampleConfig = {
   },
   env: Environment.MAINNET,
   rpc: {
-    local: '',
+    local: 'http://127.0.0.1:8545',
     mainnet: 'https://eth.llamarpc.com',
   },
   wallet: {
-    address: '0x9F969EcA8815562260Fba6C533533a918841da2a',
+    address: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266',
     privateKey:
-      '9701b33be5cd2751094d215871b85e53a93312b6d0f2ac97ff1b774055ec52a9',
+      'ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80',
   },
   tokens: {
+    // Trading
     in: WETH_TOKEN,
     amountIn: 1.8,
     out: USDC_TOKEN,
     poolFee: FeeAmount.MEDIUM,
+
+    // Liquidity
+    token0: WETH_TOKEN,
+    token0Amount: 1,
+    token1: USDC_TOKEN,
+    token1Amount: 4000,
+
   },
 }

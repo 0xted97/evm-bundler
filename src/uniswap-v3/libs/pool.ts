@@ -1,5 +1,5 @@
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-import { computePoolAddress } from '@uniswap/v3-sdk'
+import { computePoolAddress, tickToPrice } from '@uniswap/v3-sdk'
 import { ethers } from 'ethers'
 
 import { CurrentConfig } from '../config'
@@ -7,6 +7,7 @@ import { POOL_FACTORY_CONTRACT_ADDRESS } from './constants'
 import { getProvider } from './providers'
 import { getGraphPoolInfo } from './graphql'
 import { PoolInfo } from './types'
+import { Price, Token } from '@uniswap/sdk-core'
 
 
 export async function getPoolInfoFromContract(): Promise<PoolInfo> {
@@ -37,7 +38,6 @@ export async function getPoolInfoFromContract(): Promise<PoolInfo> {
       poolContract.liquidity(),
       poolContract.slot0(),
     ])
-    console.log("🚀 ~ getPoolInfoFromContract ~ slot0:", slot0.toString())
 
 
   return {
@@ -71,7 +71,20 @@ export async function getPoolInfoFromGraph(): Promise<any> {
 export async function getPoolInfo(): Promise<PoolInfo> {
   const enabled = CurrentConfig.common.subgraphUriEnabled;
   if (!enabled) {
+    console.log("🚀 ~ Get Pool from contract");
     return getPoolInfoFromContract();
   }
+  console.log("🚀 ~ Get Pool from subgraph");
   return getPoolInfoFromGraph();
+}
+
+
+
+export async function getPrice(): Promise<Price<Token, Token>> {
+  const poolInfo = await getPoolInfo()
+  return tickToPrice(
+    CurrentConfig.tokens.in,
+    CurrentConfig.tokens.out,
+    poolInfo.tick,
+  )
 }

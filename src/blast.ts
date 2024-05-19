@@ -6,7 +6,7 @@ dotenv.config();
 
 async function main() {
     // Get the private key from the environment
-    const privateKey = process.env.WALLET_PRIVE_KEY_1 || "";
+    const privateKey = process.env.WALLET_PRIVATE_KEY_1 || "";
     const tokenAddress = "0xA48aF2771E56bE99AE78c330dE627Ea63751901F";
     const BLOCKS_IN_THE_FUTURE = 1;
     const PRIORITY_FEE = ethers.utils.parseUnits("2", "gwei");

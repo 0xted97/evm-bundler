@@ -16,7 +16,7 @@ export const WETH_CONTRACT_ADDRESS =
 // Currencies and Tokens
 
 export const WETH_TOKEN = new Token(
-  ChainId.ARBITRUM_ONE,
+  ChainId.MAINNET,
   '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2',
   18,
   'WETH',
@@ -24,7 +24,7 @@ export const WETH_TOKEN = new Token(
 )
 
 export const LINK_TOKEN = new Token(
-    ChainId.ARBITRUM_ONE,
+    ChainId.MAINNET,
     '0xf97f4df75117a78c1A5a0DBb814Af92458539FB4',
     18,
     'LINK',
@@ -32,7 +32,7 @@ export const LINK_TOKEN = new Token(
   )
 
 export const USDC_TOKEN = new Token(
-  ChainId.ARBITRUM_ONE,
+  ChainId.MAINNET,
   '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48',
   6,
   'USDC',

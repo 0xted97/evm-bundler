@@ -1,3 +1,4 @@
+import { Tick } from "@uniswap/v3-sdk"
 import { BigNumber } from "ethers"
 
 export enum TransactionState {
@@ -16,6 +17,7 @@ export interface PoolInfo {
     sqrtPriceX96: BigNumber
     liquidity: BigNumber
     tick: number
+    ticks: Tick[]
 }
 
 export interface PositionInfo {

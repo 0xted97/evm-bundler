@@ -1,5 +1,5 @@
 import { Token, TradeType } from '@uniswap/sdk-core'
-import { Trade } from '@uniswap/v3-sdk'
+import { TICK_SPACINGS, Trade } from '@uniswap/v3-sdk'
 import { BigNumber, ethers } from 'ethers'
 import JSBI from 'jsbi'
 
@@ -22,3 +22,17 @@ export function displayTrade(trade: Trade<Token, Token, TradeType>): string {
     trade.inputAmount.currency.symbol
   } for ${trade.outputAmount.toExact()} ${trade.outputAmount.currency.symbol}`
 }
+
+
+export function tickToWord(tick: number, tickSpacing: number = TICK_SPACINGS[3000]): number {
+  let compressed = Math.floor(tick / tickSpacing)
+  if (tick < 0 && tick % tickSpacing !== 0) {
+    compressed -= 1
+  }
+  return tick >> 8
+}
+
+export const minWord = tickToWord(-887272)
+console.log("🚀 ~ minWord:", minWord)
+export const maxWord = tickToWord(887272)
+console.log("🚀 ~ maxWord:", maxWord)

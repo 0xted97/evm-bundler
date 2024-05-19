@@ -1,10 +1,11 @@
 import { getProvider, getWalletAddress, } from "./providers"
 import { MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS, NONFUNGIBLE_POSITION_MANAGER_CONTRACT_ADDRESS } from "./constants"
-import { CurrencyAmount, Percent, Token } from "@uniswap/sdk-core"
+import { CurrencyAmount, Percent, Price, Token } from "@uniswap/sdk-core"
 import { AddLiquidityOptions, CollectOptions, NonfungiblePositionManager, RemoveLiquidityOptions, } from "@uniswap/v3-sdk"
 import { CurrentConfig } from "../config"
 import { constructPosition } from "./positions"
 import { fromReadableAmount } from "./utils"
+import { getPoolInfo } from "./pool"
 
 export async function rawAddLiquidity(positionId: number): Promise<any> {
   const address = getWalletAddress()
@@ -153,4 +154,19 @@ export async function rawCollectFeePosition(positionId: number): Promise<any> {
     maxPriorityFeePerGas: MAX_PRIORITY_FEE_PER_GAS,
   }
   return tx;
+}
+
+
+export async function desiredMintAmounts(ranges: number[]): Promise<any> {
+  const address = getWalletAddress()
+  const provider = getProvider()
+  if (!address || !provider) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+  const poolInfo = await getPoolInfo();
+  console.log("🚀 ~ desiredAmounts ~ poolInfo:", poolInfo)
+  // const lowPrice = new Price(
+    
+  // )
+  
 }

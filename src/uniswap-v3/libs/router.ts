@@ -213,3 +213,38 @@ export async function getTokenTransferApproval(
     return TransactionState.Failed
   }
 }
+
+
+
+export async function desiredSwapAmounts(): Promise<any> {
+  const address = getWalletAddress()
+  const provider = getProvider()
+  if (!address || !provider) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+  const poolInfo = await getPoolInfo();
+
+  const pool = new Pool(
+    CurrentConfig.tokens.in,
+    CurrentConfig.tokens.out,
+    CurrentConfig.tokens.poolFee,
+    poolInfo.sqrtPriceX96.toString(),
+    poolInfo.liquidity.toString(),
+    poolInfo.tick,
+    poolInfo.ticks
+  );
+
+  const swapRoute = new Route(
+    [pool],
+    CurrentConfig.tokens.in,
+    CurrentConfig.tokens.out
+  );
+  const amountIn = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.in, 1);
+  const midPrice = swapRoute.midPrice.toSignificant(6);
+  console.log("🚀 ~ desiredSwapAmounts ~ midPrice:", midPrice)
+
+  const amountOut = await Trade.exactIn(swapRoute, amountIn)
+  console.log("🚀 ~ desiredSwapAmounts ~ amountOut:", amountOut)
+
+
+}

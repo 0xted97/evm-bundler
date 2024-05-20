@@ -29,3 +29,9 @@ export interface PositionInfo {
     tokensOwed0: BigNumber
     tokensOwed1: BigNumber
   }
+
+  export interface GraphTick {
+    tickIdx: string
+    liquidityGross: string
+    liquidityNet: string
+  }

@@ -39,16 +39,7 @@ export type TokenTrade = Trade<Token, Token, TradeType>
 // Trading Functions
 
 export async function createSingleTrade(): Promise<TokenTrade> {
-  const poolInfo = await getPoolInfo()
-
-  const pool = new Pool(
-    CurrentConfig.tokens.in,
-    CurrentConfig.tokens.out,
-    CurrentConfig.tokens.poolFee,
-    poolInfo.sqrtPriceX96.toString(),
-    poolInfo.liquidity.toString(),
-    poolInfo.tick
-  )
+  const pool = await getPoolInfo()
 
   const swapRoute = new Route(
     [pool],
@@ -222,29 +213,27 @@ export async function desiredSwapAmounts(): Promise<any> {
   if (!address || !provider) {
     throw new Error('Cannot execute a trade without a connected wallet')
   }
-  const poolInfo = await getPoolInfo();
-
-  const pool = new Pool(
-    CurrentConfig.tokens.in,
-    CurrentConfig.tokens.out,
-    CurrentConfig.tokens.poolFee,
-    poolInfo.sqrtPriceX96.toString(),
-    poolInfo.liquidity.toString(),
-    poolInfo.tick,
-    poolInfo.ticks
-  );
+  const pool = await getPoolInfo();
 
   const swapRoute = new Route(
     [pool],
     CurrentConfig.tokens.in,
     CurrentConfig.tokens.out
   );
-  const amountIn = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.in, 1);
-  const midPrice = swapRoute.midPrice.toSignificant(6);
-  console.log("🚀 ~ desiredSwapAmounts ~ midPrice:", midPrice)
 
-  const amountOut = await Trade.exactIn(swapRoute, amountIn)
-  console.log("🚀 ~ desiredSwapAmounts ~ amountOut:", amountOut)
+  const amountIn = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.in, 1 * 1e18);
+  const amountOut = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.out, 6000 * 1e6);
+  // const midPrice = swapRoute.midPrice.toSignificant(6);
+
+  const slippageTolerance = new Percent(1, 100); // 50 bips, or 0.50%
+
+  const amountOutSwap = await Trade.exactIn(swapRoute, amountIn);
+  console.log(`🚀 ~ Minimum USDT receive after swap ${amountIn.toExact()} ETH ${slippageTolerance.toFixed()}% slippage: `, amountOutSwap.minimumAmountOut(slippageTolerance).toExact())
+
+  const amountInSwap = await Trade.exactOut(swapRoute, amountOut);
+  console.log(`🚀 ~ Maximum ETH to swap ${amountOut.toExact()} USDT ${slippageTolerance.toFixed()}% slippage: `, amountInSwap.maximumAmountIn(slippageTolerance).toExact())
+
+
 
 
 }

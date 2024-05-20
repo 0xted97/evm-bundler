@@ -33,6 +33,4 @@ export function tickToWord(tick: number, tickSpacing: number = TICK_SPACINGS[300
 }
 
 export const minWord = tickToWord(-887272)
-console.log("🚀 ~ minWord:", minWord)
 export const maxWord = tickToWord(887272)
-console.log("🚀 ~ maxWord:", maxWord)

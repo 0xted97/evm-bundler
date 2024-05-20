@@ -43,7 +43,6 @@ export async function getTickIndicesInWordRange(
     }))
   }
 
-  console.log("🚀 ~ results:", results)
 
   const tickIndices: number[] = []
 

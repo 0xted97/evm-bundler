@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { CurrentConfig } from "../../config";
-import { PoolInfo } from "../types";
+import { GraphTick, PoolInfo } from "../types";
 import { ethers } from "ethers";
 import { FeeAmount, Tick, TICK_SPACINGS } from "@uniswap/v3-sdk";
 
@@ -57,9 +57,17 @@ export async function fetchTicks(poolId: string, min: number, max: number): Prom
    for (let i = min; i <= max; i += 1000) {
       const query = `
          {
-            pool(id: "${poolId.toString().toLowerCase()}") {
-               ticks(first: 1000, skip: ${i}, orderBy: id) {
+            pool(
+               id: "${poolId.toString().toLowerCase()}"
+            ) {
+               ticks(
+                  first: 1000, skip: ${i}, 
+                  orderBy: tickIdx,
+                  liquidityNet_not: "0", 
+                  orderDirection: asc
+               ) {
                   id
+                  tickIdx
                   liquidityGross
                   liquidityNet
                }
@@ -70,24 +78,79 @@ export async function fetchTicks(poolId: string, min: number, max: number): Prom
          const response = await axios.post(CurrentConfig.common.subgraphUri, {
             query: query
          });
-         if(!response.data.data) continue;
+         if (!response.data.data) continue;
 
          const { pool } = response.data.data;
          const poolTicks = pool.ticks.map((tick: any) => {
             return new Tick({
-               index: Number(String(tick.id).split("#")[1]),
+               index: Number(tick.tickIdx),
                liquidityGross: Number(tick.liquidityGross),
                liquidityNet: Number(tick.liquidityNet)
             });
          });
          ticks.push(...poolTicks);
+
       } catch (error) {
          console.error("Error fetching data from Uniswap V3 Subgraph:", error);
          throw error;
       }
+      console.log("🚀 ~ fetchTicks ~ ticks:", ticks)
+
    }
-   return ticks.filter(tick=>{
+   return ticks.filter(tick => {
       return Number(tick.liquidityNet.toString()) > 0;
    }).sort((a, b) => a.index - b.index);
 }
 
+
+
+
+export async function getFullTickData(poolAddress: string): Promise<GraphTick[]> {
+   let allTicks: GraphTick[] = []
+   let skip = 0
+   let loadingTicks = true
+   while (loadingTicks) {
+      const ticks = await getTickDataFromSubgraph(poolAddress, skip)
+      allTicks = allTicks.concat(ticks)
+      if (ticks.length < 1000) {
+         loadingTicks = false
+      } else {
+         skip += 1000
+      }
+   }
+
+   return allTicks
+}
+
+async function getTickDataFromSubgraph(
+   poolAddress: string,
+   skip: number
+): Promise<GraphTick[]> {
+   const ticksQuery = JSON.stringify({
+      query: `{ ticks(
+           where: {poolAddress: "${poolAddress.toLowerCase()}", liquidityNet_not: "0"}
+           first: 1000,
+           orderBy: tickIdx,
+           orderDirection: asc,
+           skip: ${skip}
+         ) {
+           tickIdx
+           liquidityGross
+           liquidityNet
+         }
+       }
+     `,
+   })
+
+   const response = await axios.post(
+      CurrentConfig.common.subgraphUri,
+      ticksQuery,
+      {
+         headers: {
+            'Content-Type': 'application/json',
+         },
+      }
+   )
+
+   return response.data.data.ticks
+}

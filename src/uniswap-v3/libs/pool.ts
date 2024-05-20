@@ -1,5 +1,5 @@
 import IUniswapV3PoolABI from '@uniswap/v3-core/artifacts/contracts/interfaces/IUniswapV3Pool.sol/IUniswapV3Pool.json'
-import { computePoolAddress, Tick, tickToPrice } from '@uniswap/v3-sdk'
+import { computePoolAddress, Pool, Tick, TickMath, tickToPrice } from '@uniswap/v3-sdk'
 import { ethers } from 'ethers'
 import JSBI from "jsbi";
 import { Contract, Provider } from 'ethers-multicall'
@@ -7,14 +7,14 @@ import { Contract, Provider } from 'ethers-multicall'
 import { CurrentConfig } from '../config'
 import { POOL_FACTORY_CONTRACT_ADDRESS } from './constants'
 import { getProvider } from './providers'
-import { fetchTicks, getGraphPoolInfo } from './graphql'
-import { PoolInfo } from './types'
+import { fetchTicks, getFullTickData, getGraphPoolInfo } from './graphql'
+import { GraphTick, PoolInfo } from './types'
 import { Price, Token } from '@uniswap/sdk-core'
 import { tickToWord } from './utils'
 import { getAllTicks, getTickIndicesInWordRange } from './fetcher';
 
 
-export async function getPoolInfoFromContract(): Promise<PoolInfo> {
+export async function getPoolInfoFromContract(): Promise<Pool> {
   const provider = getProvider()
   if (!provider) {
     throw new Error('No provider')
@@ -42,20 +42,41 @@ export async function getPoolInfoFromContract(): Promise<PoolInfo> {
       poolContract.liquidity(),
       poolContract.slot0(),
     ])
-  const ticks = await fetchAllTicksFromContract(currentPoolAddress, tickSpacing);
-  console.log("🚀 ~ getPoolInfoFromContract ~ ticks:", ticks)
+    
+  const graphTicks = await getFullTickData(currentPoolAddress);
+  const sdkTicks = graphTicks.map((graphTick: GraphTick) => {
+    return new Tick({
+      index: +graphTick.tickIdx,
+      liquidityGross: graphTick.liquidityGross,
+      liquidityNet: graphTick.liquidityNet,
+    })
+  });
 
 
-  return {
-    token0,
-    token1,
+
+  const pool = new Pool(
+    CurrentConfig.tokens.in,
+    CurrentConfig.tokens.out,
     fee,
-    tickSpacing,
+    slot0[0],
     liquidity,
-    sqrtPriceX96: slot0[0],
-    tick: slot0[1],
-    ticks: []
-  }
+    slot0[1],
+    sdkTicks
+  )
+
+  const tickAt = await pool.tickDataProvider.getTick(195900);
+  const activeTickIdx = (
+    await pool.tickDataProvider.nextInitializedTickWithinOneWord(
+      pool.tickCurrent,
+      pool.tickCurrent === TickMath.MIN_TICK ? false : true,
+      tickSpacing
+    )
+  )[0]
+
+  console.log("🚀 ~ getPoolInfoFromContract ~ activeTickIdx:", activeTickIdx)
+
+  return pool;
+
 }
 
 
@@ -89,8 +110,6 @@ export async function fetchAllTicksFromContract(poolAddress: string, tickSpacing
     minWord,
     maxWord
   )
-  console.log(tickIndices)
-
   // Fetch all initialized ticks from tickIndices
   const ticks = await getAllTicks(poolAddress, tickIndices)
   return ticks;
@@ -98,23 +117,18 @@ export async function fetchAllTicksFromContract(poolAddress: string, tickSpacing
 
 
 
-export async function getPoolInfo(): Promise<PoolInfo> {
-  const enabled = CurrentConfig.common.subgraphUriEnabled;
-  if (!enabled) {
-    console.log("🚀 ~ Get Pool from contract");
-    return getPoolInfoFromContract();
-  }
-  console.log("🚀 ~ Get Pool from subgraph");
-  return getPoolInfoFromGraph();
+export async function getPoolInfo(): Promise<Pool> {
+  const pool = await getPoolInfoFromContract();
+  return pool;
 }
 
 
 
 export async function getPrice(): Promise<Price<Token, Token>> {
-  const poolInfo = await getPoolInfo()
+  const pool = await getPoolInfo()
   return tickToPrice(
     CurrentConfig.tokens.in,
     CurrentConfig.tokens.out,
-    poolInfo.tick,
+    pool.tickCurrent,
   )
 }

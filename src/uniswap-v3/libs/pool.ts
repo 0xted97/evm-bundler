@@ -73,7 +73,6 @@ export async function getPoolInfoFromContract(): Promise<Pool> {
     )
   )[0]
 
-  console.log("🚀 ~ getPoolInfoFromContract ~ activeTickIdx:", activeTickIdx)
 
   return pool;
 
@@ -124,11 +123,10 @@ export async function getPoolInfo(): Promise<Pool> {
 
 
 
-export async function getPrice(): Promise<Price<Token, Token>> {
-  const pool = await getPoolInfo()
+export async function getPrice(pool: Pool): Promise<Price<Token, Token>> {
   return tickToPrice(
-    CurrentConfig.tokens.in,
-    CurrentConfig.tokens.out,
+    pool.token0,
+    pool.token1,
     pool.tickCurrent,
   )
 }

@@ -218,8 +218,10 @@ export async function desiredSwapAmounts(): Promise<any> {
   const swapRoute = new Route(
     [pool],
     CurrentConfig.tokens.in,
-    CurrentConfig.tokens.out
+    CurrentConfig.tokens.out,
   );
+
+
 
   const amountIn = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.in, 1 * 1e18);
   const amountOut = CurrencyAmount.fromRawAmount(CurrentConfig.tokens.out, 6000 * 1e6);
@@ -232,8 +234,5 @@ export async function desiredSwapAmounts(): Promise<any> {
 
   const amountInSwap = await Trade.exactOut(swapRoute, amountOut);
   console.log(`🚀 ~ Maximum ETH to swap ${amountOut.toExact()} USDT ${slippageTolerance.toFixed()}% slippage: `, amountInSwap.maximumAmountIn(slippageTolerance).toExact())
-
-
-
 
 }

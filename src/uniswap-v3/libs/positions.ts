@@ -142,27 +142,19 @@ export async function constructPosition(
     token1Amount: CurrencyAmount<Token>
   ): Promise<Position> {
     // get pool info
-    const poolInfo = await getPoolInfo()
+    const pool = await getPoolInfo()
   
     // construct pool instance
-    const configuredPool = new Pool(
-      token0Amount.currency,
-      token1Amount.currency,
-      poolInfo.fee,
-      poolInfo.sqrtPriceX96.toString(),
-      poolInfo.liquidity.toString(),
-      poolInfo.tick
-    )
-  
+
     // create position using the maximum liquidity from input amounts
     return Position.fromAmounts({
-      pool: configuredPool,
+      pool: pool,
       tickLower:
-        nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) -
-        poolInfo.tickSpacing * 2,
+        nearestUsableTick(pool.tickCurrent, pool.tickSpacing) -
+        pool.tickSpacing * 2,
       tickUpper:
-        nearestUsableTick(poolInfo.tick, poolInfo.tickSpacing) +
-        poolInfo.tickSpacing * 2,
+        nearestUsableTick(pool.tickCurrent, pool.tickSpacing) +
+        pool.tickSpacing * 2,
       amount0: token0Amount.quotient,
       amount1: token1Amount.quotient,
       useFullPrecision: true,

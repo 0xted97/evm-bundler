@@ -3,7 +3,7 @@ import { MAX_FEE_PER_GAS, MAX_PRIORITY_FEE_PER_GAS, NONFUNGIBLE_POSITION_MANAGER
 import { CurrencyAmount, Percent, Price, Fraction } from "@uniswap/sdk-core"
 import { AddLiquidityOptions, CollectOptions, nearestUsableTick, NonfungiblePositionManager, Position, priceToClosestTick, RemoveLiquidityOptions, } from "@uniswap/v3-sdk"
 import { CurrentConfig } from "../config"
-import { constructPosition } from "./positions"
+import { constructPosition, getPositionInfo } from "./positions"
 import { fromReadableAmount } from "./utils"
 import { getPoolInfo, getPrice } from "./pool"
 
@@ -313,5 +313,49 @@ export async function desiredMintAmountsWithinRange(): Promise<any> {
     mintAmount0: `${position.mintAmountsWithSlippage(slippageTolerance).amount0.toString()} ${baseCurrency.name}`,
     mintAmount1: `${position.mintAmountsWithSlippage(slippageTolerance).amount1.toString()} ${quoteCurrency.name}`,
   });
+}
 
+
+
+export async function desiredAmountsWhenBurnPosition(): Promise<any> {
+  const address = getWalletAddress()
+  const provider = getProvider()
+  if (!address || !provider) {
+    throw new Error('Cannot execute a trade without a connected wallet')
+  }
+  const positionInfo = await getPositionInfo(672849)
+  const pool = await getPoolInfo()
+
+  const baseCurrency = pool.token0;
+  console.log("🚀 ~ desiredAmountsWhenBurnPosition ~ baseCurrency:", baseCurrency)
+  const quoteCurrency = pool.token1;
+
+
+  const amount0 = CurrencyAmount.fromRawAmount(
+    baseCurrency,
+    fromReadableAmount(4000, baseCurrency.decimals).toString()
+  )
+  
+  const position = new Position({
+    pool: pool,
+    liquidity: positionInfo.liquidity.toString(),
+    tickLower: positionInfo.tickLower,
+    tickUpper: positionInfo.tickUpper,
+
+  });
+  position.token0PriceLower
+
+  console.log("🚀 ~ desiredAmountsWhenBurnPosition ~ position:", position)
+  
+  console.table({
+    title: "Add already position",
+    // amount0: position.mintAmounts.amount0.toString(),
+    // amount1: position.mintAmounts.amount1.toString(),
+    liquidity: position.liquidity.toString(),
+    amount0: position.amount0.toExact(),
+    amount1: position.amount1.toExact(),
+    token0PriceLower: position.token0PriceLower.toFixed(),
+    token0PriceUpper: position.token0PriceUpper.toFixed()
+  })
+ 
 }
